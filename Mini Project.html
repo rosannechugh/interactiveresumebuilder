@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <meta charset="UTF-8">
+  <title>Interactive Resume Builder</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 20px;
+      background-color: #f0f2f5;
+      transition: all 0.3s ease;
+    }
+
+    form, #preview {
+      flex: 1 1 45%;
+      min-width: 300px;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      animation: fadeIn 0.6s ease;
+    }
+
+    #preview {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.5s ease;
+    }
+
+    #preview.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .entry-group {
+      margin-bottom: 15px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    input:focus, textarea:focus {
+      border-color: #007BFF;
+      box-shadow: 0 0 5px rgba(0,123,255,0.5);
+      outline: none;
+    }
+
+    button, input[type="submit"] {
+      padding: 8px 16px;
+      margin-top: 10px;
+      margin-right: 8px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button {
+      background-color: #007BFF;
+      color: white;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    input[type="submit"] {
+      background-color: green;
+      color: white;
+    }
+
+    input[type="submit"]:hover {
+      background-color: darkgreen;
+    }
+
+    #preview h2, #preview h3 {
+      border-bottom: 2px solid #007BFF;
+      padding-bottom: 5px;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+
+    #preview ul {
+      list-style: disc;
+      padding-left: 20px;
+    }
+
+    #preview li {
+      margin-bottom: 6px;
+      padding: 5px 10px;
+      border-left: 3px solid #007BFF;
+      background-color: #f9f9f9;
+      transition: transform 0.3s ease, background 0.3s ease;
+    }
+
+    #preview li:hover {
+      background-color: #e6f0ff;
+      transform: translateX(5px);
+    }
+
+    @media screen and (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+
+      form, #preview {
+        flex: 1 1 100%;
+      }
+
+      #preview h2 {
+        font-size: 1.5rem;
+      }
+
+      #preview h3 {
+        font-size: 1.2rem;
+      }
+
+      #preview li {
+        font-size: 0.95rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <form id="resumeForm">
+    <h2>Build Your Resume</h2>
+
+    <div class="entry-group">
+      <label for="name">Full Name:</label>
+      <input type="text" id="name" required oninput="updatePreview()">
+    </div>
+
+    <div class="entry-group">
+      <label for="email">Email:</label>
+      <input type="email" id="email" required oninput="updatePreview()">
+    </div>
+
+    <div class="entry-group">
+      <label for="phone">Phone Number:</label>
+      <input type="tel" id="phone" required oninput="updatePreview()">
+    </div>
+
+    <div class="entry-group">
+      <label for="summary">Profile Summary:</label>
+      <textarea id="summary" rows="4" required oninput="updatePreview()"></textarea>
+    </div>
+
+    <!-- Education -->
+    <div class="entry-group">
+      <label>Education:</label>
+      <div id="educationContainer">
+        <div class="education-entry">
+          <input type="text" placeholder="Degree" class="degree" required oninput="updatePreview()">
+          <input type="text" placeholder="Institution" class="institution" required oninput="updatePreview()">
+          <input type="text" placeholder="Year" class="year" required oninput="updatePreview()">
+        </div>
+      </div>
+      <button type="button" onclick="addEducation()">+ Add More Education</button>
+    </div>
+
+    <!-- Skills -->
+    <div class="entry-group">
+      <label>Skills:</label><br>
+      <input type="checkbox" class="skill" value="HTML" onchange="updatePreview()"> HTML
+      <input type="checkbox" class="skill" value="CSS" onchange="updatePreview()"> CSS
+      <input type="checkbox" class="skill" value="JavaScript" onchange="updatePreview()"> JavaScript
+      <input type="checkbox" class="skill" value="Python" onchange="updatePreview()"> Python
+      <input type="checkbox" class="skill" value="Java" onchange="updatePreview()"> Java
+    </div>
+
+    <!-- Experience -->
+    <div class="entry-group">
+      <label>Experience:</label>
+      <div id="experienceContainer">
+        <div class="experience-entry">
+          <input type="text" placeholder="Role" class="role" required oninput="updatePreview()">
+          <input type="text" placeholder="Company" class="company" required oninput="updatePreview()">
+          <input type="text" placeholder="Duration" class="duration" required oninput="updatePreview()">
+        </div>
+      </div>
+      <button type="button" onclick="addExperience()">+ Add More Experience</button>
+    </div>
+
+    <input type="submit" value="Submit">
+    <button type="button" onclick="clearForm()">Clear Form</button>
+    <button type="button" onclick="downloadPDF()">Download PDF</button>
+
+  </form>
+
+  <div id="preview">
+    <h2 id="previewName">Your Name</h2>
+    <p><strong>Email:</strong> <span id="previewEmail"></span></p>
+    <p><strong>Phone:</strong> <span id="previewPhone"></span></p>
+
+    <h3>Profile Summary</h3>
+    <p id="previewSummary"></p>
+
+    <h3>Education</h3>
+    <ul id="previewEducation"></ul>
+
+    <h3>Skills</h3>
+    <ul id="previewSkills"></ul>
+
+    <h3>Experience</h3>
+    <ul id="previewExperience"></ul>
+  </div>
+
+  <script>
+    function updatePreview() {
+      document.getElementById('preview').classList.add('visible');
+      document.getElementById('previewName').innerText = document.getElementById('name').value || "Your Name";
+      document.getElementById('previewEmail').innerText = document.getElementById('email').value;
+      document.getElementById('previewPhone').innerText = document.getElementById('phone').value;
+      document.getElementById('previewSummary').innerText = document.getElementById('summary').value;
+
+      // Education
+      const eduList = document.getElementById('previewEducation');
+      eduList.innerHTML = '';
+      const degrees = document.querySelectorAll('.degree');
+      const institutions = document.querySelectorAll('.institution');
+      const years = document.querySelectorAll('.year');
+      for (let i = 0; i < degrees.length; i++) {
+        if (degrees[i].value || institutions[i].value || years[i].value) {
+          const li = document.createElement('li');
+          li.textContent = `${degrees[i].value} at ${institutions[i].value} (${years[i].value})`;
+          eduList.appendChild(li);
+        }
+      }
+
+      // Skills
+      const skillList = document.getElementById('previewSkills');
+      skillList.innerHTML = '';
+      const checkedSkills = document.querySelectorAll('.skill:checked');
+      checkedSkills.forEach(skill => {
+        const li = document.createElement('li');
+        li.textContent = skill.value;
+        skillList.appendChild(li);
+      });
+
+      // Experience
+      const expList = document.getElementById('previewExperience');
+      expList.innerHTML = '';
+      const roles = document.querySelectorAll('.role');
+      const companies = document.querySelectorAll('.company');
+      const durations = document.querySelectorAll('.duration');
+      for (let i = 0; i < roles.length; i++) {
+        if (roles[i].value || companies[i].value || durations[i].value) {
+          const li = document.createElement('li');
+          li.textContent = `${roles[i].value} at ${companies[i].value} (${durations[i].value})`;
+          expList.appendChild(li);
+        }
+      }
+    }
+
+    function addEducation() {
+      const container = document.getElementById('educationContainer');
+      const div = document.createElement('div');
+      div.className = 'education-entry';
+      div.innerHTML = `
+        <input type="text" placeholder="Degree" class="degree" required oninput="updatePreview()">
+        <input type="text" placeholder="Institution" class="institution" required oninput="updatePreview()">
+        <input type="text" placeholder="Year" class="year" required oninput="updatePreview()">
+      `;
+      container.appendChild(div);
+    }
+
+    function addExperience() {
+      const container = document.getElementById('experienceContainer');
+      const div = document.createElement('div');
+      div.className = 'experience-entry';
+      div.innerHTML = `
+        <input type="text" placeholder="Role" class="role" required oninput="updatePreview()">
+        <input type="text" placeholder="Company" class="company" required oninput="updatePreview()">
+        <input type="text" placeholder="Duration" class="duration" required oninput="updatePreview()">
+      `;
+      container.appendChild(div);
+    }
+
+    function clearForm() {
+      document.getElementById('resumeForm').reset();
+      document.getElementById('educationContainer').innerHTML = `
+        <div class="education-entry">
+          <input type="text" placeholder="Degree" class="degree" required oninput="updatePreview()">
+          <input type="text" placeholder="Institution" class="institution" required oninput="updatePreview()">
+          <input type="text" placeholder="Year" class="year" required oninput="updatePreview()">
+        </div>`;
+      document.getElementById('experienceContainer').innerHTML = `
+        <div class="experience-entry">
+          <input type="text" placeholder="Role" class="role" required oninput="updatePreview()">
+          <input type="text" placeholder="Company" class="company" required oninput="updatePreview()">
+          <input type="text" placeholder="Duration" class="duration" required oninput="updatePreview()">
+        </div>`;
+      document.querySelectorAll('.skill').forEach(skill => skill.checked = false);
+      updatePreview();
+    }
+    function downloadPDF() {
+  const resume = document.getElementById("preview");
+  const opt = {
+    margin:       0.5,
+    filename:     'resume.pdf',
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2 },
+    jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+  };
+  html2pdf().set(opt).from(resume).save();
+}
+
+  </script>
+
+</body>
+</html>
